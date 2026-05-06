@@ -1,0 +1,27 @@
+{% extends "_base.html" %}
+{% block title %}Add candidate{% endblock %}
+{% block body %}
+  <p><a href="{{ url_for('admin') }}">&larr; Back to admin</a></p>
+  <h1>Add a candidate</h1>
+
+  {% if error %}
+    <div class="card" style="border-color:#c33;color:#c33;"><strong>{{ error }}</strong></div>
+  {% endif %}
+
+  <form method="post" action="{{ url_for('admin_new_submit') }}">
+    <p>
+      <label>Name<br>
+        <input type="text" name="name" required value="{{ form.get('name', '') }}" style="width:100%;padding:.5rem;font-size:1rem;">
+      </label>
+    </p>
+    <p>
+      <label>Google Doc URL<br>
+        <input type="url" name="doc_url" required value="{{ form.get('doc_url', '') }}" placeholder="https://docs.google.com/document/d/.../edit" style="width:100%;padding:.5rem;font-size:1rem;">
+      </label>
+    </p>
+    <p>
+      <button type="submit">Add candidate</button>
+    </p>
+  </form>
+  <p class="muted">A unique two-word token (e.g. <code>CrispyPanda</code>) will be generated and used in the share link.</p>
+{% endblock %}

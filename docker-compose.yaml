@@ -1,0 +1,13 @@
+services:
+  worktester:
+    build: .
+    container_name: worktester
+    image: worktester
+    ports:
+      - "5001:5000"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:?set ADMIN_PASSWORD in .env}
+      - BASE_URL=${BASE_URL:-http://localhost:5001}

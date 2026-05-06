@@ -1,0 +1,35 @@
+{% extends "_base.html" %}
+{% block title %}Work trial — {{ candidate.name }}{% endblock %}
+{% block body %}
+  <h1>Welcome, {{ candidate.name }} — your work trial</h1>
+
+  <div class="card">
+    <p>This is a <strong>timed work trial</strong>. Once you click <strong>Start</strong>,
+       you will have <strong>{{ trial_hours }} hours</strong> to complete the task in the
+       linked Google Doc. Your start time is recorded automatically; the document's own
+       version history will record when you finish.</p>
+
+    <p>Please don't click Start until you're ready to begin —
+       <strong>the timer cannot be paused or reset.</strong></p>
+
+    <p class="muted">If you start now, your deadline would be approximately
+       <strong>{{ projected_deadline | localtime }}</strong>.</p>
+  </div>
+
+  <form method="post" action="{{ url_for('trial_start', token=candidate.token) }}">
+    <label class="ack">
+      <input type="checkbox" name="acknowledged" id="ack" required>
+      <span>I understand this is a {{ trial_hours }}-hour timed work trial, and that
+            the timer begins as soon as I click Start.</span>
+    </label>
+
+    <button type="submit" id="start-btn" disabled>Start my work trial</button>
+    <p class="muted">Your Google Doc will open in a new tab.</p>
+  </form>
+
+  <script>
+    const ack = document.getElementById('ack');
+    const btn = document.getElementById('start-btn');
+    ack.addEventListener('change', () => { btn.disabled = !ack.checked; });
+  </script>
+{% endblock %}

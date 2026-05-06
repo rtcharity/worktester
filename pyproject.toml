@@ -1,0 +1,10 @@
+[project]
+name = "worktester"
+version = "0.1.0"
+description = "Track when candidates start a timed work trial."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "flask>=3.1",
+    "gunicorn>=25",
+]

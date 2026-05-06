@@ -1,0 +1,21 @@
+{% extends "_base.html" %}
+{% block title %}Work trial in progress — {{ candidate.name }}{% endblock %}
+{% block body %}
+  <h1>Your work trial has started — good luck!</h1>
+
+  <div class="card">
+    <p><strong>Started:</strong> {{ started_at | localtime }}</p>
+    <p><strong>Deadline:</strong> {{ deadline | localtime }} <span class="muted">(4 hours from start)</span></p>
+  </div>
+
+  <p>
+    <a class="btn" href="{{ candidate.doc_url }}" target="_blank" rel="noopener">Open work document</a>
+  </p>
+  <p class="muted">If the document didn't open automatically, click the button above.</p>
+
+  {% if just_started %}
+  <script>
+    window.open({{ candidate.doc_url | tojson }}, '_blank', 'noopener');
+  </script>
+  {% endif %}
+{% endblock %}

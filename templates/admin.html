@@ -1,0 +1,40 @@
+{% extends "_base.html" %}
+{% block title %}Admin — work trials{% endblock %}
+{% block body %}
+  <h1>Work trials</h1>
+  <p>
+    <a class="btn" href="{{ url_for('admin_new_form') }}">+ Add candidate</a>
+    <span class="muted" style="margin-left:.75rem;">{{ candidates | length }} candidate{{ '' if candidates|length == 1 else 's' }}</span>
+  </p>
+
+  {% with messages = get_flashed_messages() %}
+    {% for msg in messages %}
+      <div class="card" style="border-color:#2a7;">{{ msg }}</div>
+    {% endfor %}
+  {% endwith %}
+
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Share link</th>
+        <th>Started</th>
+        <th>Deadline</th>
+        <th>Doc</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for c in candidates %}
+      <tr>
+        <td>{{ c.name }}</td>
+        <td><a href="{{ c.share_url }}"><code>{{ c.token }}</code></a></td>
+        <td>{{ (c.started_at | localtime) if c.started_at else '—' }}</td>
+        <td>{{ (c.deadline | localtime) if c.deadline else '—' }}</td>
+        <td><a href="{{ c.doc_url }}" target="_blank" rel="noopener">open</a></td>
+      </tr>
+    {% else %}
+      <tr><td colspan="5" class="muted">No candidates yet. <a href="{{ url_for('admin_new_form') }}">Add one</a>.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}
