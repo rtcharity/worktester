@@ -26,5 +26,16 @@
 </head>
 <body>
   {% block body %}{% endblock %}
+  <script>
+    document.querySelectorAll('time.localtime[datetime]').forEach(el => {
+      const d = new Date(el.getAttribute('datetime'));
+      if (!isNaN(d)) {
+        el.textContent = new Intl.DateTimeFormat(undefined, {
+          weekday: 'short', year: 'numeric', month: 'short', day: 'numeric',
+          hour: 'numeric', minute: '2-digit', timeZoneName: 'short'
+        }).format(d);
+      }
+    });
+  </script>
 </body>
 </html>

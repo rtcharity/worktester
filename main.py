@@ -68,6 +68,16 @@ def localtime_filter(value):
     return dt.astimezone().strftime("%a %b %-d, %Y at %-I:%M %p %Z")
 
 
+@app.template_filter("utciso")
+def utciso_filter(value):
+    if value is None:
+        return ""
+    dt = value if isinstance(value, datetime) else parse_iso(value)
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt.isoformat()
+
+
 @app.get("/healthz")
 def healthz():
     return "ok", 200

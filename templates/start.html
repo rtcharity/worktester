@@ -13,14 +13,14 @@
        <strong>the timer cannot be paused or reset.</strong></p>
 
     <p class="muted">If you start now, your deadline would be approximately
-       <strong>{{ projected_deadline | localtime }}</strong>.</p>
+       <strong><time class="localtime" datetime="{{ projected_deadline | utciso }}">{{ projected_deadline | localtime }}</time></strong>.</p>
   </div>
 
   <form method="post" action="{{ url_for('trial_start', token=candidate.token) }}">
     <label class="ack">
       <input type="checkbox" name="acknowledged" id="ack" required>
       <span>I understand this is a {{ trial_hours }}-hour timed work trial, and that
-            the timer begins as soon as I click Start.</span>
+            the timer begins as soon as I click Start my work trial.</span>
     </label>
 
     <button type="submit" id="start-btn" disabled>Start my work trial</button>

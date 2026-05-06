@@ -4,8 +4,8 @@
   <h1>Your work trial has started — good luck!</h1>
 
   <div class="card">
-    <p><strong>Started:</strong> {{ started_at | localtime }}</p>
-    <p><strong>Deadline:</strong> {{ deadline | localtime }} <span class="muted">(4 hours from start)</span></p>
+    <p><strong>Started:</strong> <time class="localtime" datetime="{{ started_at | utciso }}">{{ started_at | localtime }}</time></p>
+    <p><strong>Deadline:</strong> <time class="localtime" datetime="{{ deadline | utciso }}">{{ deadline | localtime }}</time> <span class="muted">(4 hours from start)</span></p>
   </div>
 
   <p>
