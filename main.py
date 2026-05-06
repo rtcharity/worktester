@@ -172,6 +172,25 @@ def admin():
     return render_template("admin.html", candidates=enriched)
 
 
+@app.post("/admin/<token>/delete")
+def admin_delete(token: str):
+    if not _check_admin_auth():
+        return (
+            "Authentication required",
+            401,
+            {"WWW-Authenticate": 'Basic realm="worktester admin"'},
+        )
+
+    db = get_db()
+    row = db.execute("SELECT name FROM candidates WHERE token = ?", (token,)).fetchone()
+    if row is None:
+        abort(404)
+    db.execute("DELETE FROM candidates WHERE token = ?", (token,))
+    db.commit()
+    flash(f'Deleted "{row["name"]}".')
+    return redirect(url_for("admin"))
+
+
 @app.get("/admin/new")
 def admin_new_form():
     if not _check_admin_auth():

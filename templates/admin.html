@@ -21,6 +21,7 @@
         <th>Started</th>
         <th>Deadline</th>
         <th>Doc</th>
+        <th></th>
       </tr>
     </thead>
     <tbody>
@@ -31,9 +32,15 @@
         <td>{{ (c.started_at | localtime) if c.started_at else '—' }}</td>
         <td>{{ (c.deadline | localtime) if c.deadline else '—' }}</td>
         <td><a href="{{ c.doc_url }}" target="_blank" rel="noopener">open</a></td>
+        <td>
+          <form method="post" action="{{ url_for('admin_delete', token=c.token) }}"
+                onsubmit="return confirm('Delete {{ c.name }}?')">
+            <button type="submit" style="background:none;color:#c00;padding:0;font-size:.9rem;cursor:pointer;">delete</button>
+          </form>
+        </td>
       </tr>
     {% else %}
-      <tr><td colspan="5" class="muted">No candidates yet. <a href="{{ url_for('admin_new_form') }}">Add one</a>.</td></tr>
+      <tr><td colspan="6" class="muted">No candidates yet. <a href="{{ url_for('admin_new_form') }}">Add one</a>.</td></tr>
     {% endfor %}
     </tbody>
   </table>
