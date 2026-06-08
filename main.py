@@ -5,6 +5,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from flask import Flask, abort, flash, g, redirect, render_template, request, send_from_directory, url_for
+from werkzeug.utils import secure_filename
 
 import words
 
@@ -95,6 +96,7 @@ def trial_page(token: str):
     if row["started_at"]:
         started = parse_iso(row["started_at"])
         deadline = started + TRIAL_DURATION
+        expired = datetime.now(timezone.utc) > deadline
         submission_dir = DATA_DIR / "submissions" / token
         submitted_filename = None
         if (submission_dir / "submission.pdf").exists():
@@ -105,6 +107,7 @@ def trial_page(token: str):
             candidate=row,
             started_at=started,
             deadline=deadline,
+            expired=expired,
             just_started=request.args.get("just_started") == "1",
             submitted_filename=submitted_filename,
         )
@@ -198,6 +201,11 @@ def trial_submit(token: str):
     if not row["started_at"]:
         abort(400, description="Trial has not been started.")
 
+    deadline = parse_iso(row["started_at"]) + TRIAL_DURATION
+    if datetime.now(timezone.utc) > deadline:
+        flash("The trial period has ended. Submissions are no longer accepted.")
+        return redirect(url_for("trial_page", token=token))
+
     file = request.files.get("pdf")
     if not file or file.filename == "":
         flash("Please select a PDF file to upload.")
@@ -218,8 +226,7 @@ def trial_submit(token: str):
         return redirect(url_for("trial_page", token=token))
 
     file.save(dest_dir / "submission.pdf")
-    (dest_dir / "filename.txt").write_text(file.filename)
-    flash("Your PDF has been submitted successfully.")
+    (dest_dir / "filename.txt").write_text(secure_filename(file.filename) or "submission.pdf")
     return redirect(url_for("trial_page", token=token))
 
 
@@ -302,17 +309,12 @@ def admin_new_submit():
         ), 400
 
     db = get_db()
-    while True:
-        token = secrets.choice(words.ADJECTIVES) + secrets.choice(words.NOUNS)
-        try:
-            db.execute(
-                "INSERT INTO candidates (token, name, doc_url) VALUES (?, ?, ?)",
-                (token, name, doc_url),
-            )
-            db.commit()
-            break
-        except sqlite3.IntegrityError:
-            continue
+    token = generate_token(db)
+    db.execute(
+        "INSERT INTO candidates (token, name, doc_url) VALUES (?, ?, ?)",
+        (token, name, doc_url),
+    )
+    db.commit()
 
     flash(f'Added "{name}". Share link: {request.host_url.rstrip("/")}/trial/{token}')
     return redirect(url_for("admin"))

@@ -21,6 +21,13 @@
     {% endif %}
   {% endwith %}
 
+  {% if expired %}
+    <div class="expired-banner">
+      <strong>Your trial period has ended.</strong>
+      <p>The 4-hour window has passed. No further submissions are accepted.</p>
+    </div>
+  {% endif %}
+
   <hr>
   <h2>Submit your two page impact report here</h2>
   {% if submitted_filename %}
@@ -29,16 +36,18 @@
       <div>
         <strong>Report submitted successfully!</strong>
         <p>File received: <code>{{ submitted_filename }}</code> — <a href="{{ url_for('trial_submission', token=candidate.token) }}" target="_blank">view PDF</a></p>
-        <p>You can upload a new file below if you'd like to replace it.</p>
+        {% if not expired %}<p>You can upload a new file below if you'd like to replace it.</p>{% endif %}
       </div>
     </div>
   {% endif %}
-  <form method="post" action="{{ url_for('trial_submit', token=candidate.token) }}" enctype="multipart/form-data">
-    <label for="pdf-input">Upload PDF (max 50 MB):</label><br>
-    <input id="pdf-input" type="file" name="pdf" accept=".pdf,application/pdf" required style="margin:.75rem 0">
-    <br>
-    <button type="submit">{% if submitted_filename %}Replace PDF{% else %}Submit PDF{% endif %}</button>
-  </form>
+  {% if not expired %}
+    <form method="post" action="{{ url_for('trial_submit', token=candidate.token) }}" enctype="multipart/form-data">
+      <label for="pdf-input">Upload PDF (max 50 MB):</label><br>
+      <input id="pdf-input" type="file" name="pdf" accept=".pdf,application/pdf" required style="margin:.75rem 0">
+      <br>
+      <button type="submit">{% if submitted_filename %}Replace PDF{% else %}Submit PDF{% endif %}</button>
+    </form>
+  {% endif %}
 
   {% if just_started %}
   <script>
