@@ -19,6 +19,16 @@
        <strong><time class="localtime" datetime="{{ projected_deadline | utciso }}">{{ projected_deadline | localtime }}</time></strong>.</p>
   </div>
 
+  <div class="card">
+    <p><strong>Before you begin — a few tips:</strong></p>
+    <ul>
+      <li>Grab a glass of water and any snacks you might need.</li>
+      <li>Find a quiet space where you won't be interrupted.</li>
+      <li>Close any unnecessary tabs or apps to help you stay focused.</li>
+      <li>Take a deep breath — you've got this. Good luck!</li>
+    </ul>
+  </div>
+
   <form method="post" action="{{ url_for('trial_start', token=candidate.token) }}">
     <label class="ack">
       <input type="checkbox" name="acknowledged" id="ack" required>
