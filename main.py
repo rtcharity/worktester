@@ -18,8 +18,12 @@ ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD")
 if not ADMIN_PASSWORD:
     raise RuntimeError("ADMIN_PASSWORD env var must be set")
 
+SUBMISSIONS_DIR = DATA_DIR / "submissions"
+MAX_PDF_BYTES = 50 * 1024 * 1024  # 50 MB
+
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", ADMIN_PASSWORD)
+app.config["MAX_CONTENT_LENGTH"] = MAX_PDF_BYTES
 
 
 def get_db() -> sqlite3.Connection:
@@ -186,10 +190,6 @@ def admin():
     return render_template("admin.html", candidates=enriched)
 
 
-SUBMISSIONS_DIR = DATA_DIR / "submissions"
-MAX_PDF_BYTES = 50 * 1024 * 1024  # 50 MB
-
-
 @app.post("/trial/<token>/submit")
 def trial_submit(token: str):
     db = get_db()
@@ -203,7 +203,7 @@ def trial_submit(token: str):
 
     deadline = parse_iso(row["started_at"]) + TRIAL_DURATION
     if datetime.now(timezone.utc) > deadline:
-        flash("The trial period has ended. Submissions are no longer accepted.")
+        flash("The trial period has ended. Submissions are no longer accepted.", "error")
         return redirect(url_for("trial_page", token=token))
 
     file = request.files.get("pdf")

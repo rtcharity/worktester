@@ -6,6 +6,9 @@
   <div class="card">
     <p><strong>Started:</strong> <time class="localtime" datetime="{{ started_at | utciso }}">{{ started_at | localtime }}</time></p>
     <p><strong>Deadline:</strong> <time class="localtime" datetime="{{ deadline | utciso }}">{{ deadline | localtime }}</time> <span class="muted">(4 hours from start)</span></p>
+    {% if not expired %}
+    <p><strong>Time remaining:</strong> <span id="countdown" style="font-variant-numeric: tabular-nums;"></span></p>
+    {% endif %}
   </div>
 
   <p>
@@ -13,10 +16,10 @@
   </p>
   <p class="muted">If the document didn't open automatically, click the button above.</p>
 
-  {% with messages = get_flashed_messages() %}
+  {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
-      {% for msg in messages %}
-        <p class="flash">{{ msg }}</p>
+      {% for category, msg in messages %}
+        <p class="flash {{ category }}">{{ msg }}</p>
       {% endfor %}
     {% endif %}
   {% endwith %}
@@ -52,6 +55,32 @@
   {% if just_started %}
   <script>
     window.open({{ candidate.doc_url | tojson }}, '_blank', 'noopener');
+  </script>
+  {% endif %}
+
+  {% if not expired %}
+  <script>
+    (function () {
+      const deadline = new Date({{ deadline | utciso | tojson }});
+      const el = document.getElementById('countdown');
+      if (!el) return;
+      function tick() {
+        const ms = deadline - Date.now();
+        if (ms <= 0) {
+          el.textContent = 'Time is up';
+          el.style.color = '#c00';
+          clearInterval(timer);
+          return;
+        }
+        const h = Math.floor(ms / 3600000);
+        const m = Math.floor((ms % 3600000) / 60000);
+        const s = Math.floor((ms % 60000) / 1000);
+        el.textContent = h + 'h ' + String(m).padStart(2, '0') + 'm ' + String(s).padStart(2, '0') + 's';
+        el.style.color = ms < 600000 ? '#c00' : '';
+      }
+      tick();
+      const timer = setInterval(tick, 1000);
+    })();
   </script>
   {% endif %}
 {% endblock %}
