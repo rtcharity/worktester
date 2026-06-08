@@ -13,6 +13,26 @@
   </p>
   <p class="muted">If the document didn't open automatically, click the button above.</p>
 
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      {% for msg in messages %}
+        <p class="flash">{{ msg }}</p>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <hr>
+  <h2>Submit your work</h2>
+  {% if submitted %}
+    <p class="submitted-notice">&#10003; PDF received. You can replace it by uploading a new file below.</p>
+  {% endif %}
+  <form method="post" action="{{ url_for('trial_submit', token=candidate.token) }}" enctype="multipart/form-data">
+    <label for="pdf-input">Upload PDF (max 20 MB):</label><br>
+    <input id="pdf-input" type="file" name="pdf" accept=".pdf,application/pdf" required style="margin:.75rem 0">
+    <br>
+    <button type="submit">Submit PDF</button>
+  </form>
+
   {% if just_started %}
   <script>
     window.open({{ candidate.doc_url | tojson }}, '_blank', 'noopener');

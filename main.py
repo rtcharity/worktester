@@ -4,7 +4,7 @@ import sqlite3
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from flask import Flask, abort, flash, g, redirect, render_template, request, url_for
+from flask import Flask, abort, flash, g, redirect, render_template, request, send_from_directory, url_for
 
 import words
 
@@ -95,12 +95,14 @@ def trial_page(token: str):
     if row["started_at"]:
         started = parse_iso(row["started_at"])
         deadline = started + TRIAL_DURATION
+        submitted = (DATA_DIR / "submissions" / token / "submission.pdf").exists()
         return render_template(
             "started.html",
             candidate=row,
             started_at=started,
             deadline=deadline,
             just_started=request.args.get("just_started") == "1",
+            submitted=submitted,
         )
 
     projected_deadline = datetime.now(timezone.utc) + TRIAL_DURATION
@@ -170,6 +172,46 @@ def admin():
             }
         )
     return render_template("admin.html", candidates=enriched)
+
+
+SUBMISSIONS_DIR = DATA_DIR / "submissions"
+MAX_PDF_BYTES = 50 * 1024 * 1024  # 50 MB
+
+
+@app.post("/trial/<token>/submit")
+def trial_submit(token: str):
+    db = get_db()
+    row = db.execute(
+        "SELECT name, started_at FROM candidates WHERE token = ?", (token,)
+    ).fetchone()
+    if row is None:
+        abort(404)
+    if not row["started_at"]:
+        abort(400, description="Trial has not been started.")
+
+    file = request.files.get("pdf")
+    if not file or file.filename == "":
+        flash("Please select a PDF file to upload.")
+        return redirect(url_for("trial_page", token=token))
+
+    if not file.filename.lower().endswith(".pdf"):
+        flash("Only PDF files are accepted.")
+        return redirect(url_for("trial_page", token=token))
+
+    dest_dir = SUBMISSIONS_DIR / token
+    dest_dir.mkdir(parents=True, exist_ok=True)
+
+    save_path = dest_dir / "submission.pdf"
+    file.seek(0, 2)
+    size = file.tell()
+    file.seek(0)
+    if size > MAX_PDF_BYTES:
+        flash("File is too large. Maximum size is 20 MB.")
+        return redirect(url_for("trial_page", token=token))
+
+    file.save(save_path)
+    flash("Your PDF has been submitted successfully.")
+    return redirect(url_for("trial_page", token=token))
 
 
 @app.post("/admin/<token>/delete")
