@@ -22,15 +22,22 @@
   {% endwith %}
 
   <hr>
-  <h2>Submit your work</h2>
-  {% if submitted %}
-    <p class="submitted-notice">&#10003; PDF received. You can replace it by uploading a new file below.</p>
+  <h2>Submit your two page impact report here</h2>
+  {% if submitted_filename %}
+    <div class="success-banner">
+      <span class="success-icon">&#10003;</span>
+      <div>
+        <strong>Report submitted successfully!</strong>
+        <p>File received: <code>{{ submitted_filename }}</code> — <a href="{{ url_for('trial_submission', token=candidate.token) }}" target="_blank">view PDF</a></p>
+        <p>You can upload a new file below if you'd like to replace it.</p>
+      </div>
+    </div>
   {% endif %}
   <form method="post" action="{{ url_for('trial_submit', token=candidate.token) }}" enctype="multipart/form-data">
-    <label for="pdf-input">Upload PDF (max 20 MB):</label><br>
+    <label for="pdf-input">Upload PDF (max 50 MB):</label><br>
     <input id="pdf-input" type="file" name="pdf" accept=".pdf,application/pdf" required style="margin:.75rem 0">
     <br>
-    <button type="submit">Submit PDF</button>
+    <button type="submit">{% if submitted_filename %}Replace PDF{% else %}Submit PDF{% endif %}</button>
   </form>
 
   {% if just_started %}

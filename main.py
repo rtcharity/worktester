@@ -95,14 +95,18 @@ def trial_page(token: str):
     if row["started_at"]:
         started = parse_iso(row["started_at"])
         deadline = started + TRIAL_DURATION
-        submitted = (DATA_DIR / "submissions" / token / "submission.pdf").exists()
+        submission_dir = DATA_DIR / "submissions" / token
+        submitted_filename = None
+        if (submission_dir / "submission.pdf").exists():
+            name_file = submission_dir / "filename.txt"
+            submitted_filename = name_file.read_text() if name_file.exists() else "submission.pdf"
         return render_template(
             "started.html",
             candidate=row,
             started_at=started,
             deadline=deadline,
             just_started=request.args.get("just_started") == "1",
-            submitted=submitted,
+            submitted_filename=submitted_filename,
         )
 
     projected_deadline = datetime.now(timezone.utc) + TRIAL_DURATION
@@ -161,6 +165,10 @@ def admin():
     enriched = []
     for r in rows:
         started = parse_iso(r["started_at"]) if r["started_at"] else None
+        submission_dir = SUBMISSIONS_DIR / r["token"]
+        has_submission = (submission_dir / "submission.pdf").exists()
+        name_file = submission_dir / "filename.txt"
+        submitted_filename = name_file.read_text() if has_submission and name_file.exists() else None
         enriched.append(
             {
                 "token": r["token"],
@@ -169,6 +177,7 @@ def admin():
                 "started_at": started,
                 "deadline": started + TRIAL_DURATION if started else None,
                 "share_url": f"{base_url}/trial/{r['token']}",
+                "submitted_filename": submitted_filename,
             }
         )
     return render_template("admin.html", candidates=enriched)
@@ -201,17 +210,40 @@ def trial_submit(token: str):
     dest_dir = SUBMISSIONS_DIR / token
     dest_dir.mkdir(parents=True, exist_ok=True)
 
-    save_path = dest_dir / "submission.pdf"
     file.seek(0, 2)
     size = file.tell()
     file.seek(0)
     if size > MAX_PDF_BYTES:
-        flash("File is too large. Maximum size is 20 MB.")
+        flash("File is too large. Maximum size is 50 MB.")
         return redirect(url_for("trial_page", token=token))
 
-    file.save(save_path)
+    file.save(dest_dir / "submission.pdf")
+    (dest_dir / "filename.txt").write_text(file.filename)
     flash("Your PDF has been submitted successfully.")
     return redirect(url_for("trial_page", token=token))
+
+
+@app.get("/trial/<token>/submission")
+def trial_submission(token: str):
+    row = get_db().execute(
+        "SELECT 1 FROM candidates WHERE token = ?", (token,)
+    ).fetchone()
+    if row is None:
+        abort(404)
+
+    submission_dir = SUBMISSIONS_DIR / token
+    if not (submission_dir / "submission.pdf").exists():
+        abort(404)
+
+    name_file = submission_dir / "filename.txt"
+    display_name = name_file.read_text() if name_file.exists() else "submission.pdf"
+
+    return send_from_directory(
+        submission_dir.resolve(),
+        "submission.pdf",
+        download_name=display_name,
+        as_attachment=False,
+    )
 
 
 @app.post("/admin/<token>/delete")
