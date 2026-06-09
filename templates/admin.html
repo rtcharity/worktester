@@ -1,5 +1,5 @@
 {% extends "_base.html" %}
-{% block title %}Admin — work trials{% endblock %}
+{% block title %}Admin: work trials{% endblock %}
 {% block body %}
   <h1>Work trials</h1>
   <p>
@@ -30,14 +30,14 @@
       <tr>
         <td>{{ c.name }}</td>
         <td><a href="{{ c.share_url }}"><code>{{ c.token }}</code></a></td>
-        <td>{{ (c.started_at | localtime) if c.started_at else '—' }}</td>
-        <td>{{ (c.deadline | localtime) if c.deadline else '—' }}</td>
+        <td>{{ (c.started_at | localtime) if c.started_at else '' }}</td>
+        <td>{{ (c.deadline | localtime) if c.deadline else '' }}</td>
         <td><a href="{{ c.doc_url }}" target="_blank" rel="noopener">open</a></td>
         <td>
           {% if c.submitted_filename %}
             <a href="{{ url_for('trial_submission', token=c.token) }}" target="_blank">&#128196; {{ c.submitted_filename }}</a>
           {% else %}
-            <span class="muted">—</span>
+            <span class="muted">Not submitted</span>
           {% endif %}
         </td>
         <td>

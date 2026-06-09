@@ -1,7 +1,7 @@
 {% extends "_base.html" %}
-{% block title %}Work trial in progress — {{ candidate.name }}{% endblock %}
+{% block title %}Work trial in progress: {{ candidate.name }}{% endblock %}
 {% block body %}
-  <h1>Your work trial has started — good luck!</h1>
+  <h1>Your work trial has started. Good luck!</h1>
 
   <div class="card">
     <p><strong>Started:</strong> <time class="localtime" datetime="{{ started_at | utciso }}">{{ started_at | localtime }}</time></p>
@@ -38,7 +38,7 @@
       <span class="success-icon">&#10003;</span>
       <div>
         <strong>Report submitted successfully!</strong>
-        <p>File received: <code>{{ submitted_filename }}</code> — <a href="{{ url_for('trial_submission', token=candidate.token) }}" target="_blank">view PDF</a></p>
+        <p>File received: <code>{{ submitted_filename }}</code> (<a href="{{ url_for('trial_submission', token=candidate.token) }}" target="_blank">view PDF</a>)</p>
         {% if not expired %}<p>You can upload a new file below if you'd like to replace it.</p>{% endif %}
       </div>
     </div>
