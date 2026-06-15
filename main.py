@@ -3,6 +3,7 @@ import secrets
 import sqlite3
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 from flask import Flask, abort, flash, g, redirect, render_template, request, send_from_directory, url_for
 from werkzeug.utils import secure_filename
@@ -70,7 +71,7 @@ def localtime_filter(value):
     if value is None:
         return ""
     dt = value if isinstance(value, datetime) else parse_iso(value)
-    return dt.astimezone().strftime("%a %b %-d, %Y at %-I:%M %p %Z")
+    return dt.astimezone(ZoneInfo("America/Vancouver")).strftime("%a %b %-d, %Y at %-I:%M %p %Z")
 
 
 @app.template_filter("utciso")
